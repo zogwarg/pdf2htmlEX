@@ -92,6 +92,7 @@ void HTMLTextLine::dump_text(ostream & out)
             << " " << CSS::LEFT_CN             << all_manager.left.install(line_state.x - clip_x1)
             << " " << CSS::HEIGHT_CN           << all_manager.height.install(ascent)
             << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(line_state.y - clip_y1)
+            << " " << CSS::WIDTH_CN            << all_manager.width.install(width) // ADDED BY THOMAS #TOMMOD
             ;
         // it will be closed by the first state
     }
