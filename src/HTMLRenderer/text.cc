@@ -31,7 +31,6 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     double cur_word_space   = state->getWordSpace();
     double cur_horiz_scaling = state->getHorizScaling();
 
-
     // Writing mode fonts and Type 3 fonts are rendered as images
     // I don't find a way to display writing mode fonts in HTML except for one div for each character, which is too costly
     // For type 3 fonts, due to the font matrix, still it's hard to show it on HTML
@@ -64,9 +63,17 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     CharCode code;
     Unicode *u = nullptr;
 
+    HTMLTextLine * tom_line = html_text_page.get_cur_line();
+    double tom_font_size = cur_text_state.font_size;
+    double tom_letter_space = cur_text_state.letter_space;
+    double tom_word_space = cur_text_state.word_space;
+    double tom_horiz_scaling = 1 ;//tom_line->line_state.transform_matrix[0];
+
     while (len > 0) 
     {
         auto n = font->getNextChar(p, len, &code, &u, &uLen, &dx1, &dy1, &ox, &oy);
+
+        //std::cout << HTMLRenderer::TOM_getFontSize(state) << endl; // TOMTRACK
 
         if(!(equal(ox, 0) && equal(oy, 0)))
         {
@@ -88,18 +95,22 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
             is_space = true;
             ++nSpaces;
         }
-        
+
         if(is_space && (param.space_as_offset))
         {
             // ignore horiz_scaling, as it has been merged into CTM
-            html_text_page.get_cur_line()->append_offset((dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale); 
+            ////html_text_page.get_cur_line()->append_offset((dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale); 
+            tom_line->append_offset((dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale);
+            std::cout << (dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale << ' ';
         }
         else
         {
             if((param.decompose_ligature) && (uLen > 1) && all_of(u, u+uLen, isLegalUnicode))
             {
                 // TODO: why multiply cur_horiz_scaling here?
-                html_text_page.get_cur_line()->append_unicodes(u, uLen, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
+                ////html_text_page.get_cur_line()->append_unicodes(u, uLen, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
+                tom_line->append_unicodes(u, uLen, (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling);
+                std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
             }
             else
             {
@@ -113,7 +124,9 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                     uu = unicode_from_font(code, font);
                 }
                 // TODO: why multiply cur_horiz_scaling here?
-                html_text_page.get_cur_line()->append_unicodes(&uu, 1, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
+                ////html_text_page.get_cur_line()->append_unicodes(&uu, 1, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
+                tom_line->append_unicodes(&uu, 1, (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling);
+                std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
                 /*
                  * In PDF, word_space is appended if (n == 1 and *p = ' ')
                  * but in HTML, word_space is appended if (uu == ' ')
@@ -121,7 +134,9 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                 int space_count = (is_space ? 1 : 0) - ((uu == ' ') ? 1 : 0);
                 if(space_count != 0)
                 {
-                    html_text_page.get_cur_line()->append_offset(cur_word_space * draw_text_scale * space_count);
+                    ////html_text_page.get_cur_line()->append_offset(cur_word_space * draw_text_scale * space_count); //????TOM
+                    tom_line->append_offset(tom_word_space * draw_text_scale * space_count);
+                    std::cout << tom_word_space * draw_text_scale * space_count << ' ';
                 }
             }
         }
@@ -137,15 +152,56 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     // horiz_scaling is merged into ctm now, 
     // so the coordinate system is ugly
     // TODO: why multiply cur_horiz_scaling here
-    dx = (dx * cur_font_size + nChars * cur_letter_space + nSpaces * cur_word_space) * cur_horiz_scaling;
+    ////dx = (dx * cur_font_size + nChars * cur_letter_space + nSpaces * cur_word_space) * cur_horiz_scaling;
+
+    std::cout << endl;// << tom_font_size << ' ' << tom_letter_space << ' ' << tom_word_space << ' ' << tom_horiz_scaling << ' ' << nChars << ' ' << nSpaces << endl ; 
+
+    dx = (dx * tom_font_size + nChars * tom_letter_space + nSpaces * tom_word_space) * tom_horiz_scaling;
     
-    dy *= cur_font_size;
+    ////dy *= cur_font_size;
+    dy *= tom_font_size;
 
     cur_tx += dx;
     cur_ty += dy;
         
     draw_tx += dx;
     draw_ty += dy;
+}
+
+double HTMLRenderer::TOM_getFontSize (GfxState * state) {
+
+    GfxFont *tom_font;
+    double *tom_fm;
+    double tom_fontSize;
+    char *tom_name;
+    int tom_code;
+    double tom_w;
+
+    // adjust the font size
+    tom_fontSize = state->getTransformedFontSize();
+    if ((tom_font = state->getFont()) && tom_font->getType() == fontType3) {
+        // This is a hack which makes it possible to deal with some Type 3
+        // fonts.  The problem is that it's impossible to know what the
+        // base coordinate system used in the font is without actually
+        // rendering the font.  This code tries to guess by looking at the
+        // width of the character 'm' (which breaks if the font is a
+        // subset that doesn't contain 'm').
+        for (tom_code = 0; tom_code < 256; ++tom_code) { if ((tom_name = ((Gfx8BitFont *)tom_font)->getCharName(tom_code)) && tom_name[0] == 'm' && tom_name[1] == '\0') { break; } }
+        
+        if (tom_code < 256) {
+            tom_w = ((Gfx8BitFont *)tom_font)->getWidth(tom_code);
+            if (tom_w != 0) {
+                // 600 is a generic average 'm' width -- yes, this is a hack
+                tom_fontSize *= tom_w / 0.6;
+            }
+        }
+        tom_fm = tom_font->getFontMatrix();
+        if (tom_fm[0] != 0) {
+            tom_fontSize *= fabs(tom_fm[3] / tom_fm[0]);
+        }
+    }
+
+    return tom_fontSize;
 }
 
 } // namespace pdf2htmlEX

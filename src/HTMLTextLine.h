@@ -88,6 +88,7 @@ public:
      */
     void prepare(void);
     void optimize(std::vector<HTMLTextLine*> &);
+    HTMLLineState line_state; // TOMMOD
 private:
     void optimize_normal(std::vector<HTMLTextLine*> &);
     void optimize_aggressive(std::vector<HTMLTextLine*> &);
@@ -95,7 +96,7 @@ private:
     const Param & param;
     AllStateManager & all_manager;
 
-    HTMLLineState line_state;
+    //HTMLLineState line_state; // TOMMOD
     double ascent, descent;
     double clip_x1, clip_y1;
     double width;

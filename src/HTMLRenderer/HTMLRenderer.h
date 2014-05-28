@@ -122,6 +122,7 @@ public:
     virtual void clipToStrokePath(GfxState * state);
     
     virtual void drawString(GfxState * state, GooString * s);
+    virtual double TOM_getFontSize(GfxState * state);
 
     virtual void drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg);
 
