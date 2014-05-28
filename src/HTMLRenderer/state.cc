@@ -385,6 +385,7 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(merged)
         {
             html_text_page.get_cur_line()->append_offset(dx * old_draw_text_scale);
+            //std::cout << dx * old_draw_text_scale << ' ' << 3 << ' ';
             if(equal(dy, 0))
             {
                 cur_text_state.vertical_align = 0;
@@ -516,6 +517,7 @@ void HTMLRenderer::prepare_text_line(GfxState * state)
         if(!equal(target, 0))
         {
             html_text_page.get_cur_line()->append_offset(target);
+            //std::cout << target << ' ' << 4 << ' ';
             draw_tx += target / draw_text_scale;
         }
     }

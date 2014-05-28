@@ -88,7 +88,7 @@ public:
      */
     void prepare(void);
     void optimize(std::vector<HTMLTextLine*> &);
-    HTMLLineState line_state; // TOMMOD
+    HTMLLineState line_state; // TOMMOD to change back to private, and modify text.cc in consequence
 private:
     void optimize_normal(std::vector<HTMLTextLine*> &);
     void optimize_aggressive(std::vector<HTMLTextLine*> &);
@@ -96,7 +96,7 @@ private:
     const Param & param;
     AllStateManager & all_manager;
 
-    //HTMLLineState line_state; // TOMMOD
+    //HTMLLineState line_state; // TOMMOD to change back to private, and modify text.cc in consequence
     double ascent, descent;
     double clip_x1, clip_y1;
     double width;

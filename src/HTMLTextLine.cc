@@ -37,7 +37,9 @@ HTMLTextLine::HTMLTextLine (const HTMLLineState & line_state, const Param & para
 void HTMLTextLine::append_unicodes(const Unicode * u, int l, double width)
 {
     text.insert(text.end(), u, u+l);
+    //this->width = this->width >= 0 ? this->width : 0 ;
     this->width += width;
+    //std::cout << this->width << ' ' << width << ' ' << 1 << ' ';
 }
 
 void HTMLTextLine::append_offset(double width)
@@ -51,7 +53,9 @@ void HTMLTextLine::append_offset(double width)
         offsets.back().width += width;
     else
         offsets.emplace_back(text.size(), width);
+    //this->width = this->width >= 0 ? this->width : 0 ;
     this->width += width;
+    //std::cout << width << ' ' << 0 << ' ';
 }
 
 void HTMLTextLine::append_state(const HTMLTextState & text_state)

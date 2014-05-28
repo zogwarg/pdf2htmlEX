@@ -101,7 +101,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
             // ignore horiz_scaling, as it has been merged into CTM
             ////html_text_page.get_cur_line()->append_offset((dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale); 
             tom_line->append_offset((dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale);
-            std::cout << (dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale << ' ';
+            //std::cout << (dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale << ' ' << 2 << ' ';
         }
         else
         {
@@ -110,7 +110,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                 // TODO: why multiply cur_horiz_scaling here?
                 ////html_text_page.get_cur_line()->append_unicodes(u, uLen, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
                 tom_line->append_unicodes(u, uLen, (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling);
-                std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
+                //std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
             }
             else
             {
@@ -126,7 +126,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                 // TODO: why multiply cur_horiz_scaling here?
                 ////html_text_page.get_cur_line()->append_unicodes(&uu, 1, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling);
                 tom_line->append_unicodes(&uu, 1, (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling);
-                std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
+                //std::cout << (dx1 * tom_font_size + tom_letter_space) * tom_horiz_scaling << ' ';
                 /*
                  * In PDF, word_space is appended if (n == 1 and *p = ' ')
                  * but in HTML, word_space is appended if (uu == ' ')
@@ -136,7 +136,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                 {
                     ////html_text_page.get_cur_line()->append_offset(cur_word_space * draw_text_scale * space_count); //????TOM
                     tom_line->append_offset(tom_word_space * draw_text_scale * space_count);
-                    std::cout << tom_word_space * draw_text_scale * space_count << ' ';
+                    //std::cout << tom_word_space * draw_text_scale * space_count << ' ' << 1 << ' ' ;
                 }
             }
         }
@@ -149,17 +149,18 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
         len -= n;
     }
 
+    //std::cout << endl;// << tom_font_size << ' ' << tom_letter_space << ' ' << tom_word_space << ' ' << tom_horiz_scaling << ' ' << nChars << ' ' << nSpaces << endl ; 
+
     // horiz_scaling is merged into ctm now, 
     // so the coordinate system is ugly
     // TODO: why multiply cur_horiz_scaling here
-    ////dx = (dx * cur_font_size + nChars * cur_letter_space + nSpaces * cur_word_space) * cur_horiz_scaling;
-
-    std::cout << endl;// << tom_font_size << ' ' << tom_letter_space << ' ' << tom_word_space << ' ' << tom_horiz_scaling << ' ' << nChars << ' ' << nSpaces << endl ; 
-
-    dx = (dx * tom_font_size + nChars * tom_letter_space + nSpaces * tom_word_space) * tom_horiz_scaling;
     
-    ////dy *= cur_font_size;
-    dy *= tom_font_size;
+
+    dx = (dx * cur_font_size + nChars * cur_letter_space + nSpaces * cur_word_space) * cur_horiz_scaling;
+    //dx = (dx * tom_font_size + nChars * tom_letter_space + nSpaces * tom_word_space) * tom_horiz_scaling;
+    
+    dy *= cur_font_size;
+    //dy *= tom_font_size;
 
     cur_tx += dx;
     cur_ty += dy;
@@ -168,7 +169,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     draw_ty += dy;
 }
 
-double HTMLRenderer::TOM_getFontSize (GfxState * state) {
+/*double HTMLRenderer::TOM_getFontSize (GfxState * state) {
 
     GfxFont *tom_font;
     double *tom_fm;
@@ -202,6 +203,6 @@ double HTMLRenderer::TOM_getFontSize (GfxState * state) {
     }
 
     return tom_fontSize;
-}
+}*/
 
 } // namespace pdf2htmlEX
