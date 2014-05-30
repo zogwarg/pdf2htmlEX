@@ -59,6 +59,7 @@ struct Param
     int space_as_offset;
     int tounicode;
     int optimize_text;
+    int force_new_line; // TOMMOD
 
     // background image
     std::string bg_format;

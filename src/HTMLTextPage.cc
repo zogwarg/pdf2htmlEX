@@ -31,6 +31,9 @@ HTMLTextPage::~HTMLTextPage()
 
 void HTMLTextPage::dump_text(ostream & out)
 {
+
+    //std::cout << text_lines.size() << ' ' << std::endl;
+
     if(param.optimize_text)
     {
         // text lines may be split during optimization, collect them

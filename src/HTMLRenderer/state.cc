@@ -212,7 +212,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
             }
             else
             {
-                set_line_state(new_line_state, NLS_NEWSTATE);
+                if (param.force_new_line){
+                    set_line_state(new_line_state, NLS_NEWLINE);
+                } else {
+                    set_line_state(new_line_state, NLS_NEWSTATE);
+                }
             }
             cur_text_state.font_info = new_font_info;
         }
@@ -303,7 +307,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
 
         if(!equal(new_draw_font_size, cur_text_state.font_size))
         {
-            set_line_state(new_line_state, NLS_NEWSTATE);
+            if (param.force_new_line){
+                set_line_state(new_line_state, NLS_NEWLINE);
+            } else {
+                set_line_state(new_line_state, NLS_NEWSTATE);
+            }
             cur_text_state.font_size = new_draw_font_size;
         }
 
@@ -393,7 +401,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
             else
             {
                 cur_text_state.vertical_align = (dy * old_draw_text_scale);
-                set_line_state(new_line_state, NLS_NEWSTATE);
+                if (param.force_new_line){
+                    set_line_state(new_line_state, NLS_NEWLINE);
+                } else {
+                    set_line_state(new_line_state, NLS_NEWSTATE);
+                }
             }
             draw_tx = cur_tx;
             draw_ty = cur_ty;
@@ -417,7 +429,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!equal(new_letter_space, cur_text_state.letter_space))
         {
             cur_text_state.letter_space = new_letter_space;
-            set_line_state(new_line_state, NLS_NEWSTATE);
+            if (param.force_new_line){
+                set_line_state(new_line_state, NLS_NEWLINE);
+            } else {
+                set_line_state(new_line_state, NLS_NEWSTATE);
+            }
         }
     }
 
@@ -429,7 +445,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!equal(new_word_space, cur_text_state.word_space))
         {
             cur_text_state.word_space = new_word_space;
-            set_line_state(new_line_state, NLS_NEWSTATE);
+            if (param.force_new_line){
+                set_line_state(new_line_state, NLS_NEWLINE);
+            } else {
+                set_line_state(new_line_state, NLS_NEWSTATE);
+            }
         }
     }
 
@@ -454,7 +474,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!(new_fill_color == cur_text_state.fill_color))
         {
             cur_text_state.fill_color = new_fill_color;
-            set_line_state(new_line_state, NLS_NEWSTATE);
+            if (param.force_new_line){
+                set_line_state(new_line_state, NLS_NEWLINE);
+            } else {
+                set_line_state(new_line_state, NLS_NEWSTATE);
+            }
         }
     }
 
@@ -480,7 +504,11 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!(new_stroke_color == cur_text_state.stroke_color))
         {
             cur_text_state.stroke_color = new_stroke_color;
-            set_line_state(new_line_state, NLS_NEWSTATE);
+            if (param.force_new_line){
+                set_line_state(new_line_state, NLS_NEWLINE);
+            } else {
+                set_line_state(new_line_state, NLS_NEWSTATE);
+            }
         }
     }
 
