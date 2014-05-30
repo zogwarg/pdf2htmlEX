@@ -72,7 +72,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
         double tom_letter_space = cur_text_state.letter_space ;//>=0 ? cur_text_state.letter_space : 0;
         double tom_word_space = cur_text_state.word_space;
         double tom_horiz_scaling = tom_line->line_state.transform_matrix[0];
-        std::cout << tom_letter_space << ' ' << (char) code << ' ' ; 
+        std::cout << dx1 * tom_font_size + tom_letter_space << ' ' << (char) code << ' ' << (draw_text_scale == tom_font_size) << ' ' ; 
 
         //std::cout << HTMLRenderer::TOM_getFontSize(state) << endl; // TOMTRACK
 
@@ -101,7 +101,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
         {
             // ignore horiz_scaling, as it has been merged into CTM
             ////html_text_page.get_cur_line()->append_offset((dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale); 
-            tom_line->append_offset((dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale);
+            tom_line->append_offset((dx1 * tom_font_size + tom_letter_space + tom_word_space));
             //std::cout << (dx1 * tom_font_size + tom_letter_space + tom_word_space) * draw_text_scale << ' ' << 2 << ' ';
         }
         else
