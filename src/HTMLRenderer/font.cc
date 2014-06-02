@@ -1010,8 +1010,16 @@ void HTMLRenderer::export_remote_font(const FontInfo & info, const string & form
     }
     string mime_type = iter->second;
 
+    //TOMMOD AFFREUX A MODIFIER
+
+    string tom_font_name = HTMLRenderer::TOM_sanitizeFontName(font);
+
+
+
+
     f_css.fs << "@font-face{"
-             << "font-family:" << CSS::FONT_FAMILY_CN << info.id << ";"
+             //<< "font-family:" << CSS::FONT_FAMILY_CN << info.id << ";"
+             << "font-family:" << tom_font_name << ";"
              << "src:url(";
 
     {
@@ -1034,7 +1042,8 @@ void HTMLRenderer::export_remote_font(const FontInfo & info, const string & form
              << "format(\"" << css_font_format << "\");"
              << "}" // end of @font-face
              << "." << CSS::FONT_FAMILY_CN << info.id << "{"
-             << "font-family:" << CSS::FONT_FAMILY_CN << info.id << ";"
+             //<< "font-family:" << CSS::FONT_FAMILY_CN << info.id << ";"
+             << "font-family:" << tom_font_name << ";"
              << "line-height:" << round(info.ascent - info.descent) << ";"
              << "font-style:normal;"
              << "font-weight:normal;"
@@ -1085,6 +1094,22 @@ void HTMLRenderer::export_local_font(const FontInfo & info, GfxFont * font, cons
     f_css.fs << "visibility:visible;";
 
     f_css.fs << "}" << endl;
+}
+
+std::string HTMLRenderer::TOM_sanitizeFontName(GfxFont * font)
+{
+    std::string tom_name = (font->getName() ? font->getName()->getCString() : "arial"); // TODO REPLACE ARIAL
+    std::vector<std::string> elems;
+    std::string item;
+    std::stringstream ss(tom_name);
+    while (std::getline(ss, item, '+')) {
+        elems.push_back(item);
+    }
+    if (elems.size() > 1) {
+        return elems[1];
+    } else {
+        return elems[0];
+    }
 }
 
 } //namespace pdf2htmlEX
