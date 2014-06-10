@@ -429,7 +429,7 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!equal(new_letter_space, cur_text_state.letter_space))
         {
             cur_text_state.letter_space = new_letter_space;
-            if (param.force_new_line){
+            if (param.force_new_line && letter_space_changed ){
                 set_line_state(new_line_state, NLS_NEWLINE);
             } else {
                 set_line_state(new_line_state, NLS_NEWSTATE);
@@ -445,7 +445,7 @@ void HTMLRenderer::check_state_change(GfxState * state)
         if(!equal(new_word_space, cur_text_state.word_space))
         {
             cur_text_state.word_space = new_word_space;
-            if (param.force_new_line){
+            if (param.force_new_line && word_space_changed ){
                 set_line_state(new_line_state, NLS_NEWLINE);
             } else {
                 set_line_state(new_line_state, NLS_NEWSTATE);

@@ -122,7 +122,7 @@ public:
     virtual void clipToStrokePath(GfxState * state);
     
     virtual void drawString(GfxState * state, GooString * s);
-    virtual std::string TOM_sanitizeFontName(GfxFont * font); // TOMMOD
+    virtual std::string TOM_sanitizeFontName(GfxFont * font, const FontInfo & info); // TOMMOD
 
     virtual void drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg);
 
@@ -333,7 +333,7 @@ protected:
     struct {
         std::ofstream fs;
         std::string path;
-    } f_outline, f_pages, f_css;
+    } f_outline, f_pages, f_css , f_fonts ; //TOMMOD ADDED FONT NAMES
     std::ofstream * f_curpage;
     std::string cur_page_filename;
 

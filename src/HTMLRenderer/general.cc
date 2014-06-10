@@ -319,6 +319,19 @@ void HTMLRenderer::pre_process(PDFDoc * doc)
         set_stream_flags(f_css.fs);
     }
 
+    {
+        /* TOMMOD ADDING FONTNAMES FILE */
+
+        auto fn =  str_fmt("%s/%s", param.dest_dir.c_str(), "font.names");
+
+        f_fonts.path = (char*)fn;
+        f_fonts.fs.open(f_fonts.path, ofstream::binary);
+        if(!f_fonts.fs)
+            throw string("Cannot open ") + (char*)fn + " for writing";
+        set_stream_flags(f_fonts.fs);
+    }
+
+
     if (param.process_outline)
     {
         /*
