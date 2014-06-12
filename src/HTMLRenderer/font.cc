@@ -1012,7 +1012,7 @@ void HTMLRenderer::export_remote_font(const FontInfo & info, const string & form
 
     //TOMMOD AFFREUX A MODIFIER
 
-    string tom_font_name = HTMLRenderer::TOM_sanitizeFontName(font,info);
+    string tom_font_name = HTMLRenderer::TOM_exportFontName(font,info);
 
     f_css.fs << "@font-face{"
              << "font-family:" << CSS::FONT_FAMILY_CN << info.id << ";"
@@ -1093,7 +1093,7 @@ void HTMLRenderer::export_local_font(const FontInfo & info, GfxFont * font, cons
     f_css.fs << "}" << endl;
 }
 
-std::string HTMLRenderer::TOM_sanitizeFontName(GfxFont * font, const FontInfo & info)
+std::string HTMLRenderer::TOM_exportFontName(GfxFont * font, const FontInfo & info)
 {
     std::string tom_name = (font->getName() ? font->getName()->getCString() : "arial"); // TODO REPLACE ARIAL
 
@@ -1109,7 +1109,7 @@ std::string HTMLRenderer::TOM_sanitizeFontName(GfxFont * font, const FontInfo & 
     //     return elems[0];
     // }
 
-    f_fonts.fs << CSS::FONT_FAMILY_CN << info.id << ":" << tom_name << endl;
+    f_fonts.fs << CSS::FONT_FAMILY_CN << info.id << ":" << tom_name << ":" << endl;
 
     return tom_name;
 }
