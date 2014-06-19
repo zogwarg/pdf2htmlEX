@@ -336,6 +336,7 @@ protected:
     } f_outline, f_pages, f_css , f_fonts ; //TOMMOD ADDED FONT NAMES
     std::ofstream * f_curpage;
     std::string cur_page_filename;
+    int image_count=0;
 
     static const std::string MANIFEST_FILENAME;
 };

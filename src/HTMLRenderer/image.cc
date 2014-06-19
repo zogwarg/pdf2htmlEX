@@ -9,12 +9,68 @@
 
 #include "HTMLRenderer.h"
 #include "util/namespace.h"
+#include <goo/ImgWriter.h>
+#include <goo/PNGWriter.h>
+#include <sstream>
 
 namespace pdf2htmlEX {
 
+using std::cerr;
+
 void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
 {
+    if(maskColors) return;
+
+    unsigned char *row;
+    unsigned char *rowp;
+    Guchar *p;
+    GfxRGB rgb;
+
+
+    image_count++;
+    cerr << "Going through draw image " << image_count << " Format " << colorMap->getBits() <<endl ;
+    
+    std::stringstream sstm;
+    sstm << "Image" << image_count << ".png";
+    const char * filename = sstm.str().c_str();
+    FILE * f = fopen(filename, "wb");
+    
+    std::unique_ptr<ImgWriter> writer;
+    writer = std::unique_ptr<ImgWriter>(new PNGWriter);
+    if(!writer->init(f, width, height, param.h_dpi, param.v_dpi))
+        throw "Cannot initialize PNGWriter";
+    
+    ImageStream * imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
+    imgStr->reset();
+
+    row = (unsigned char *) gmallocn(width, sizeof(unsigned int));
+    for (int y = 0; y < height; y++) {
+        p = imgStr->getLine();
+        rowp = row;
+        for (int x = 0; x < width; ++x) {
+        if (p) {
+          colorMap->getRGB(p, &rgb);
+          *rowp++ = colToByte(rgb.r);
+          *rowp++ = colToByte(rgb.g);
+          *rowp++ = colToByte(rgb.b);
+          p += colorMap->getNumPixelComps();
+        } else {
+          *rowp++ = 0;
+          *rowp++ = 0;
+          *rowp++ = 0;
+        }
+      }
+      writer->writeRow(&row);
+    }
+    gfree(row);
+    imgStr->close();
+    delete imgStr;
+    writer->close();
+    fclose(f);
+
     return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+}
+} // namespace pdf2htmlEX
 
 #if 0
     if(maskColors)
@@ -60,6 +116,3 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
 
     ++ image_count;
 #endif
-}
-
-} // namespace pdf2htmlEX
