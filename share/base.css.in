@@ -101,6 +101,16 @@
 .@CSS_PAGE_CONTENT_BOX_CN@.opened { /* used by pdf2htmlEX.js, to show/hide pages */
   display:block;
 }
+.@CSS_IMAGE_CN@ { /* images splitted in page*/
+  position:absolute;
+  border:0;
+  margin:0;
+  -ms-user-select:none;
+  -moz-user-select:none;
+  -webkit-user-select:none;
+  user-select:none;
+  visibility:hidden;
+}
 .@CSS_FULL_BACKGROUND_IMAGE_CN@ { /* images that occupies the whole page */
   position:absolute;
   border:0;
@@ -113,6 +123,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
+  visibility:visible;
 }
 .@CSS_BACKGROUND_IMAGE_CN@ { /* images that cover only a part of the page */
   position:absolute;
@@ -122,6 +133,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
+  visibility:visible;
 }
 @media print {
   .@CSS_PAGE_FRAME_CN@ {

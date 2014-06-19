@@ -180,6 +180,7 @@ void HTMLRenderer::startPage(int pageNum, GfxState *state, XRef * xref)
 {
     //if (param.force_new_line) std::cout << 'yes' ;
     this->pageNum = pageNum;
+    this->image_count = 0;
 
     double pageWidth = state->getPageWidth();
     double pageHeight = state->getPageHeight();

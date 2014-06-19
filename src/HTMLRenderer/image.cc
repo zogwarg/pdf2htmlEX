@@ -9,6 +9,7 @@
 
 #include "HTMLRenderer.h"
 #include "util/namespace.h"
+#include "util/css_const.h"
 #include <goo/ImgWriter.h>
 #include <goo/PNGWriter.h>
 #include <sstream>
@@ -26,21 +27,24 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     Guchar *p;
     GfxRGB rgb;
 
+    std::stringstream sstm;
+    const char *filename;
+    FILE * f;
+    std::unique_ptr<ImgWriter> writer;
+    ImageStream *imgStr;
 
     image_count++;
-    cerr << "Going through draw image " << image_count << " Format " << colorMap->getBits() <<endl ;
+    cerr << "Going through draw image " << image_count << endl ;
     
-    std::stringstream sstm;
-    sstm << "Image" << image_count << ".png";
-    const char * filename = sstm.str().c_str();
-    FILE * f = fopen(filename, "wb");
+    sstm << std::hex << "Image-" << HTMLRenderer::pageNum << "-" << std::dec << image_count << ".png";
+    filename = sstm.str().c_str();
+    f = fopen(filename, "wb");
     
-    std::unique_ptr<ImgWriter> writer;
     writer = std::unique_ptr<ImgWriter>(new PNGWriter);
     if(!writer->init(f, width, height, param.h_dpi, param.v_dpi))
         throw "Cannot initialize PNGWriter";
     
-    ImageStream * imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
+    imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
     imgStr->reset();
 
     row = (unsigned char *) gmallocn(width, sizeof(unsigned int));
@@ -68,7 +72,23 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     writer->close();
     fclose(f);
 
-    return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+    // double ctm[6];
+    // memcpy(ctm, state->getCTM(), sizeof(ctm));
+    // ctm[4] = ctm[5] = 0.0;
+
+    auto & all_manager = HTMLRenderer::all_manager;
+    double h_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.h_dpi;
+    double v_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.v_dpi;
+
+    (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
+                 << " " << CSS::LEFT_CN             << all_manager.left.install(state->getCurX())
+                 << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(state->getCurY() - height * v_scale)
+                 << " " << CSS::WIDTH_CN            << all_manager.width.install(( width - 0 ) * h_scale)
+                 << " " << CSS::HEIGHT_CN           << all_manager.height.install(( height - 0 ) * v_scale)
+                 //<< " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
+                 << "\" src=\"" << filename << "\"/>" ;   
+
+    //return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
 }
 } // namespace pdf2htmlEX
 
