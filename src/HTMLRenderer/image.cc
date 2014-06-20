@@ -34,9 +34,9 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     ImageStream *imgStr;
 
     image_count++;
-    cerr << "Going through draw image " << image_count << " ";
+    cerr << "Page '" << hex <<  HTMLRenderer::pageNum << dec << "' going through draw image " << image_count << ":" << endl;
     
-    sstm << std::hex << "Image-" << HTMLRenderer::pageNum << "-" << std::dec << image_count << ".png";
+    sstm << hex << "Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
     f = fopen(filename, "wb");
     
@@ -72,21 +72,28 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     writer->close();
     fclose(f);
 
-    // double ctm[6];
-    // memcpy(ctm, state->getCTM(), sizeof(ctm));
-    // ctm[4] = ctm[5] = 0.0;
+    double ctm[6];
+    memcpy(ctm, state->getCTM(), sizeof(ctm));
+    //ctm[4] = ctm[5] = 0.0;
 
     auto & all_manager = HTMLRenderer::all_manager;
-    double h_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.h_dpi;
-    double v_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.v_dpi;
+    
+    //double h_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.h_dpi;
+    //double v_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.v_dpi;
 
-    cerr << h_scale << "x" << v_scale << endl;
+    //cerr << "1:" << ctm[0] << ":2:" << ctm[1] << ":3:" << ctm[2] << ":4:" << ctm[3] << ":5:" << ctm[4] << ":6:" << ctm[5] << endl;
+
+    double left = ctm[4] ;
+    double bottom = ctm[5] ;
+    double cssWidth = ctm[0] ;
+    double cssHeight = ctm[3] ;
+
 
     (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
-                 << " " << CSS::LEFT_CN             << all_manager.left.install(state->getCurX())
-                 << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(state->getCurY() - height * v_scale)
-                 << " " << CSS::WIDTH_CN            << all_manager.width.install(( width - 0 ) * h_scale)
-                 << " " << CSS::HEIGHT_CN           << all_manager.height.install(( height - 0 ) * v_scale)
+                 << " " << CSS::LEFT_CN             << all_manager.left.install(left)
+                 << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(bottom)
+                 << " " << CSS::WIDTH_CN            << all_manager.width.install(cssWidth)
+                 << " " << CSS::HEIGHT_CN           << all_manager.height.install(cssHeight)
                  //<< " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
                  << "\" src=\"" << filename << "\"/>" ;   
 
