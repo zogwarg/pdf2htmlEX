@@ -34,7 +34,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     ImageStream *imgStr;
 
     image_count++;
-    cerr << "Going through draw image " << image_count << endl ;
+    cerr << "Going through draw image " << image_count << " ";
     
     sstm << std::hex << "Image-" << HTMLRenderer::pageNum << "-" << std::dec << image_count << ".png";
     filename = sstm.str().c_str();
@@ -79,6 +79,8 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     auto & all_manager = HTMLRenderer::all_manager;
     double h_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.h_dpi;
     double v_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.v_dpi;
+
+    cerr << h_scale << "x" << v_scale << endl;
 
     (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
                  << " " << CSS::LEFT_CN             << all_manager.left.install(state->getCurX())

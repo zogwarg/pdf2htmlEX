@@ -123,7 +123,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
-  visibility:visible;
+  visibility:hidden;
 }
 .@CSS_BACKGROUND_IMAGE_CN@ { /* images that cover only a part of the page */
   position:absolute;
@@ -133,7 +133,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
-  visibility:visible;
+  visibility:hidden;
 }
 @media print {
   .@CSS_PAGE_FRAME_CN@ {
