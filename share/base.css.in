@@ -109,7 +109,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
-  visibility:hidden;
+  visibility:visible;
 }
 .@CSS_FULL_BACKGROUND_IMAGE_CN@ { /* images that occupies the whole page */
   position:absolute;
