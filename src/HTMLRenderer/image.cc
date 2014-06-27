@@ -29,6 +29,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
 
     std::stringstream sstm;
     const char *filename;
+    const char *filepath;
     FILE * f;
     std::unique_ptr<ImgWriter> writer;
     ImageStream *imgStr;
@@ -36,9 +37,12 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     image_count++;
     cerr << "Page '" << hex <<  HTMLRenderer::pageNum << dec << "' going through draw image " << image_count << ":" << endl;
     
-    sstm << param.dest_dir <<hex << "/Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
+    sstm << hex << "/Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
-    f = fopen(filename, "wb");
+    sstm.str("");
+    sstm << param.dest_dir << filename;
+    filepath = sstm.str().c_str();
+    f = fopen(filepath, "wb");
     
     writer = std::unique_ptr<ImgWriter>(new PNGWriter);
     if(!writer->init(f, width, height, param.h_dpi, param.v_dpi))
