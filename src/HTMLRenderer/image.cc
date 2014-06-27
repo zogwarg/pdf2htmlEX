@@ -36,7 +36,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     image_count++;
     cerr << "Page '" << hex <<  HTMLRenderer::pageNum << dec << "' going through draw image " << image_count << ":" << endl;
     
-    sstm << hex << "Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
+    sstm << param.dest_dir <<hex << "/Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
     f = fopen(filename, "wb");
     
