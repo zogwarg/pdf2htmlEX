@@ -40,6 +40,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     sstm << hex << "Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
     sstm.str("");
+    sstm.clear();
     sstm << param.dest_dir << "/" << filename;
     filepath = sstm.str().c_str();
     f = fopen(filepath, "wb");
