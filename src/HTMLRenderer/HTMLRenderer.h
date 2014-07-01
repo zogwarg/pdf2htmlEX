@@ -122,7 +122,7 @@ public:
     virtual void clipToStrokePath(GfxState * state);
     
     virtual void drawString(GfxState * state, GooString * s);
-    virtual std::string TOM_exportFontName(GfxFont * font, const FontInfo & info); // TOMMOD
+    virtual std::string TOM_exportFontName(GfxFont * font, const FontInfo & info , const std::string & format ); // TOMMOD
 
     virtual void drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg);
 
