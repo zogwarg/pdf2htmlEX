@@ -91,7 +91,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     double left = ctm[4] ;
     double bottom = ctm[5] ;
     double cssWidth = ctm[0] ;
-    double cssHeight = ctm[3] ;
+    double cssHeight = ctm[3] ; // TO BE BETTER MANAGED , SOME IMAGES ARE ROTATED
 
 
     (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
