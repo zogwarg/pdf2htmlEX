@@ -39,14 +39,14 @@ Issues may be closed due to the following reasons:
 * Fixed
 * Duplicate of other issues
 * Invalid / Won't fix / Off topic
-* Inactiviy (for unconfirmed issues)
+* Inactivity (for unconfirmed issues)
 * Insufficient info (for unconfirmed issues)
 
 In the last two cases, you can reopen the issue when you can provide more information.
 
 ### The Mailing List
 
-The [Mailing list](pdf2htmlex@googlegroups.com) is set up for discussion and announcements.
+The [mailing list](https://groups.google.com/forum/#!forum/pdf2htmlex) is set up for discussion and announcements.
 You are welcome to [ask any question](#ask-questions) about pdf2htmlEX there. 
 However do not report issues or submit patches there, since it's terrible to keep track of them.
 
@@ -93,6 +93,7 @@ Bugs should always be reported to [the Issue Tracker](#the-issue-tracker).
 Before you report any bug:
 - Use the latest git version of pdf2htmlEX, since the issue may have been already fixed.
 - Search for previous issues (open or closed), to make sure that the issue has not been reported before.
+- If pdf2htmlEX crashed, take a look at [this article](https://github.com/coolwanglu/pdf2htmlEX/wiki/Troubleshooting-Crashes).
 
 A good bug report shouldn't leave others needing to chase you up for more information.
 The developers may be very familiar with the code base of pdf2htmlEX,

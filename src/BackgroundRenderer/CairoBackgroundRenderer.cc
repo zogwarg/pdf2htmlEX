@@ -48,8 +48,8 @@ void CairoBackgroundRenderer::init(PDFDoc * doc)
     startDoc(doc);
 }
 
-static GBool annot_cb(Annot *, void *) {
-    return false;
+static GBool annot_cb(Annot *, void * pflag) {
+    return (*((bool*)pflag)) ? gTrue : gFalse;
 };
 
 void CairoBackgroundRenderer::render_page(PDFDoc * doc, int pageno)
@@ -79,14 +79,14 @@ void CairoBackgroundRenderer::render_page(PDFDoc * doc, int pageno)
 
     cairo_t * cr = cairo_create(surface);
     setCairo(cr);
-    setPrinting(false);
 
+    bool process_annotation = param.process_annotation;
     doc->displayPage(this, pageno, param.h_dpi, param.v_dpi,
             0, 
             (!(param.use_cropbox)),
             false, 
             false,
-            nullptr, nullptr, &annot_cb, nullptr);
+            nullptr, nullptr, &annot_cb, &process_annotation);
 
     setCairo(nullptr);
     
