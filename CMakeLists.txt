@@ -120,7 +120,7 @@ configure_file (${CMAKE_SOURCE_DIR}/share/pdf2htmlEX.js.in ${CMAKE_SOURCE_DIR}/s
 
 set(PDF2HTMLEX_SRC ${PDF2HTMLEX_SRC}
     src/Param.h
-    src/pdf2htmlEX.cc
+    src/pdf2htmlEX-v.cc
     src/pdf2htmlEX-config.h
     src/HTMLRenderer/HTMLRenderer.h
     src/HTMLRenderer/draw.cc
@@ -174,8 +174,8 @@ set(PDF2HTMLEX_SRC ${PDF2HTMLEX_SRC}
     src/TmpFiles.cc
     )
 
-add_executable(pdf2htmlEX ${PDF2HTMLEX_SRC})
-target_link_libraries(pdf2htmlEX ${PDF2HTMLEX_LIBS})
+add_executable(pdf2htmlEX-v ${PDF2HTMLEX_SRC})
+target_link_libraries(pdf2htmlEX-v ${PDF2HTMLEX_LIBS})
 
 add_custom_target(pdf2htmlEX_resources ALL DEPENDS
     ${CMAKE_SOURCE_DIR}/share/base.min.css
@@ -198,7 +198,7 @@ add_custom_command(OUTPUT
         ${CMAKE_SOURCE_DIR}/share/fancy.css
     )
 
-install (TARGETS pdf2htmlEX DESTINATION bin)
+install (TARGETS pdf2htmlEX-v DESTINATION bin)
 
 set(PDF2HTMLEX_RESOURCE
     ${CMAKE_SOURCE_DIR}/3rdparty/PDF.js/compatibility.js
@@ -213,7 +213,7 @@ set(PDF2HTMLEX_RESOURCE
     ${CMAKE_SOURCE_DIR}/share/pdf2htmlEX.min.js
     ${CMAKE_SOURCE_DIR}/share/pdf2htmlEX-64x64.png
     )
-install (FILES ${PDF2HTMLEX_RESOURCE} DESTINATION share/pdf2htmlEX)
+install (FILES ${PDF2HTMLEX_RESOURCE} DESTINATION share/pdf2htmlEX-v)
 install (FILES pdf2htmlEX.1 DESTINATION share/man/man1)
 
 enable_testing()
