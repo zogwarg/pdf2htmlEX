@@ -32,17 +32,17 @@ HTMLTextLine::HTMLTextLine (const HTMLLineState & line_state, const Param & para
     ,clip_x1(0)
     ,clip_y1(0)
     ,width(0)
+    ,width_for_box(0)
 { }
 
-void HTMLTextLine::append_unicodes(const Unicode * u, int l, double width)
+void HTMLTextLine::append_unicodes(const Unicode * u, int l, double width , double width_for_box )
 {
     text.insert(text.end(), u, u+l);
-    //this->width = this->width >= 0 ? this->width : 0 ;
     this->width += width;
-    //std::cout << this->width << ' ' << width << ' ' << 1 << ' ';
+    this->width_for_box += width_for_box;
 }
 
-void HTMLTextLine::append_offset(double width)
+void HTMLTextLine::append_offset(double width,double width_for_box)
 {
     /*
      * If the last offset is very thin, we can ignore it and directly use it
@@ -55,6 +55,7 @@ void HTMLTextLine::append_offset(double width)
         offsets.emplace_back(text.size(), width);
     //this->width = this->width >= 0 ? this->width : 0 ;
     this->width += width;
+    this->width_for_box += width_for_box;
     //std::cout << width << ' ' << 0 << ' ';
 }
 
@@ -96,7 +97,7 @@ void HTMLTextLine::dump_text(ostream & out)
             << " " << CSS::LEFT_CN             << all_manager.left.install(line_state.x - clip_x1)
             << " " << CSS::HEIGHT_CN           << all_manager.height.install(ascent)
             << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(line_state.y - clip_y1)
-            << " " << CSS::WIDTH_CN            << all_manager.width.install(width) // ADDED BY THOMAS #TOMMOD
+            << " " << CSS::WIDTH_CN            << all_manager.width.install(width_for_box) // ADDED BY THOMAS #TOMMOD
             ;
         // it will be closed by the first state
     }

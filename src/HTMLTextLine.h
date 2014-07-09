@@ -73,8 +73,8 @@ public:
         double width;
     };
 
-    void append_unicodes(const Unicode * u, int l, double width);
-    void append_offset(double width);
+    void append_unicodes(const Unicode * u, int l, double width,double width_for_box);
+    void append_offset(double width,double width_for_box);
     void append_state(const HTMLTextState & text_state);
     void dump_text(std::ostream & out);
 
@@ -100,6 +100,7 @@ private:
     double ascent, descent;
     double clip_x1, clip_y1;
     double width;
+    double width_for_box; //TOMMOD
 
     std::vector<State> states;
     std::vector<Offset> offsets;
