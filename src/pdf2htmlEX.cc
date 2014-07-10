@@ -56,7 +56,7 @@ void show_usage_and_exit(const char * dummy = nullptr)
 void show_version_and_exit(const char * dummy = nullptr)
 {
     cerr << "pdf2htmlEX version " << PDF2HTMLEX_VERSION << endl;
-    cerr << "Copyright 2012-2014 Lu Wang <coolwanglu@gmail.com> and other contributers" << endl;
+    cerr << "Copyright 2012-2014 Lu Wang <coolwanglu@gmail.com> and other contributors" << endl;
     cerr << "Libraries: " << endl;
     cerr << "  poppler " << POPPLER_VERSION << endl;
     cerr << "  libfontforge " << ffw_get_version() << endl;
@@ -188,9 +188,13 @@ void parse_options (int argc, char **argv)
         .add("tounicode", &param.tounicode, 0, "how to handle ToUnicode CMaps (0=auto, 1=force, -1=ignore)")
         .add("optimize-text", &param.optimize_text, 0, "try to reduce the number of HTML elements used for text")
         .add("force-new-line", &param.force_new_line , 1, "Seperate lines in different lines when font info is different TOMMOD")
+        .add("correct-text-visibility", &param.correct_text_visibility, 0, "try to detect texts covered by other graphics and properly arrange them")
 
         // background image
         .add("bg-format", &param.bg_format, "png", "specify background image format")
+        .add("svg-node-count-limit", &param.svg_node_count_limit, -1, "if node count in a svg background image exceeds this limit,"
+                " fall back this page to bitmap background; negative value means no limit.")
+        .add("svg-embed-bitmap", &param.svg_embed_bitmap, 1, "1: embed bitmaps in svg background; 0: dump bitmaps to external files if possible.")
 
         // encryption
         .add("owner-password,o", &param.owner_password, "", "owner password (for encrypted files)", true)
@@ -204,6 +208,7 @@ void parse_options (int argc, char **argv)
         // TODO: css drawings are hidden on print, for annot links, need to fix it for other drawings
 //        .add("css-draw", &param.css_draw, 0, "[experimental and unsupported] CSS drawing")
         .add("debug", &param.debug, 0, "print debugging information")
+        .add("proof", &param.proof, 0, "texts are drawn on both text layer and background for proof.")
 
         // meta
         .add("version,v", "print copyright and version info", &show_version_and_exit)

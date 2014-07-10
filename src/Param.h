@@ -38,6 +38,7 @@ struct Param
     int process_nontext;
     int process_outline;
     int process_annotation;
+    int correct_text_visibility;
     int printing;
     int fallback;
     int tmp_file_size_limit;
@@ -64,6 +65,8 @@ struct Param
 
     // background image
     std::string bg_format;
+    int svg_node_count_limit;
+    int svg_embed_bitmap;
 
     // encryption
     std::string owner_password, user_password;
@@ -75,6 +78,7 @@ struct Param
     std::string tmp_dir;
     int css_draw;
     int debug;
+    int proof;
 
     std::string input_filename, output_filename;
 };

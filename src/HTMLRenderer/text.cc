@@ -26,7 +26,6 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
         return;
 
     auto font = state->getFont();
-    // unscaled
     double cur_letter_space = state->getCharSpace();
     double cur_word_space   = state->getWordSpace();
     double cur_horiz_scaling = state->getHorizScaling();
@@ -51,13 +50,16 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     char *p = s->getCString();
     int len = s->getLength();
 
+    //accumulated displacement of chars in this string, in text object space
     double dx = 0;
     double dy = 0;
-    double dx1,dy1;
+    //displacement of current char, in text object space, including letter space but not word space.
+    double ddx, ddy;
+    //advance of current char, in glyph space
+    double ax, ay;
+    //origin of current char, in glyph space
     double ox, oy;
 
-    int nChars = 0;
-    int nSpaces = 0;
     int uLen;
 
     CharCode code;
@@ -77,6 +79,9 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
         {
             cerr << "TODO: non-zero origins" << endl;
         }
+        ddx = ax * cur_font_size + cur_letter_space;
+        ddy = ay * cur_font_size;
+        tracer.draw_char(state, dx, dy, ax, ay);
 
         bool is_space = false;
         if (n == 1 && *p == ' ') 
@@ -91,14 +96,14 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
              * There are always ugly PDF files with no useful info at all.
              */
             is_space = true;
-            ++nSpaces;
         }
 
         if(is_space && (param.space_as_offset))
         {
+            tom_line->append_padding_char();
             // ignore horiz_scaling, as it has been merged into CTM
             //tom_line->append_offset((dx1 * tom_font_size + tom_letter_space + tom_word_space));
-            tom_line->append_offset((dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale,(dx1 * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale);
+            tom_line->append_offset((ax * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale,(ax * cur_font_size + cur_letter_space + cur_word_space) * draw_text_scale);
         }
         else
         {
@@ -106,7 +111,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
             {
                 // TODO: why multiply cur_horiz_scaling here?
                 //tom_line->append_unicodes(u, uLen, (dx1 * tom_font_size + tom_letter_space) );
-                tom_line->append_unicodes(u, uLen, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling,(dx1 * tom_font_size + tom_letter_space));
+                tom_line->append_unicodes(u, uLen,ddx,(ax * tom_font_size + tom_letter_space));
             }
             else
             {
@@ -121,7 +126,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
                 }
                 // TODO: why multiply cur_horiz_scaling here?
                 //tom_line->append_unicodes(&uu, 1, (dx1 * tom_font_size + tom_letter_space) );
-                tom_line->append_unicodes(&uu, 1, (dx1 * cur_font_size + cur_letter_space) * cur_horiz_scaling,(dx1 * tom_font_size + tom_letter_space));
+                tom_line->append_unicodes(&uu, 1, ddx,(ax * tom_font_size + tom_letter_space));
                 /*
                  * In PDF, word_space is appended if (n == 1 and *p = ' ')
                  * but in HTML, word_space is appended if (uu == ' ')
@@ -135,20 +140,14 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
             }
         }
 
-        dx += dx1;
-        dy += dy1;
+        dx += ddx * cur_horiz_scaling;
+        dy += ddy;
+        if (is_space)
+            dx += cur_word_space * cur_horiz_scaling;
 
-        ++nChars;
         p += n;
         len -= n;
     }
-
-    // horiz_scaling is merged into ctm now, 
-    // so the coordinate system is ugly
-    // TODO: why multiply cur_horiz_scaling here
-    dx = (dx * cur_font_size + nChars * cur_letter_space + nSpaces * cur_word_space) * cur_horiz_scaling;
-    
-    dy *= cur_font_size;
 
     cur_tx += dx;
     cur_ty += dy;
@@ -156,4 +155,17 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
     draw_tx += dx;
     draw_ty += dy;
 }
+
+bool HTMLRenderer::is_char_covered(int index)
+{
+    auto covered = covered_text_detecor.get_chars_covered();
+    if (index < 0 || index >= (int)covered.size())
+    {
+        std::cerr << "Warning: HTMLRenderer::is_char_covered: index out of bound: "
+                << index << ", size: " << covered.size() <<endl;
+        return false;
+    }
+    return covered[index];
+}
+
 } // namespace pdf2htmlEX

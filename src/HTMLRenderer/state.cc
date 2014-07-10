@@ -46,6 +46,7 @@ void HTMLRenderer::updateFont(GfxState * state)
 void HTMLRenderer::updateCTM(GfxState * state, double m11, double m12, double m21, double m22, double m31, double m32) 
 {
     ctm_changed = true; 
+    tracer.update_ctm(state, m11, m12, m21, m22, m31, m32);
 }
 void HTMLRenderer::updateTextMat(GfxState * state) 
 {
@@ -89,14 +90,17 @@ void HTMLRenderer::updateStrokeColor(GfxState * state)
 void HTMLRenderer::clip(GfxState * state)
 {
     clip_changed = true;
+    tracer.clip(state);
 }
 void HTMLRenderer::eoClip(GfxState * state)
 {
     clip_changed = true;
+    tracer.clip(state, true);
 }
 void HTMLRenderer::clipToStrokePath(GfxState * state)
 {
     clip_changed = true;
+    tracer.clip_to_stroke_path(state);
 }
 void HTMLRenderer::reset_state()
 {
@@ -118,6 +122,8 @@ void HTMLRenderer::reset_state()
     cur_line_state.x = 0;
     cur_line_state.y = 0;
     memcpy(cur_line_state.transform_matrix, ID_MATRIX, sizeof(cur_line_state.transform_matrix));
+
+    cur_line_state.is_char_covered = [this](int index) { return is_char_covered(index);};
 
     cur_clip_state.xmin = 0;
     cur_clip_state.xmax = 0;
@@ -261,7 +267,7 @@ void HTMLRenderer::check_state_change(GfxState * state)
     }
 
     // draw_text_tm, draw_text_scale
-    // depends: font size & ctm & text_ctm & hori scale
+    // depends: font size & ctm & text_ctm & hori scale & rise
     if(need_rescale_font)
     {
         /*
@@ -390,10 +396,9 @@ void HTMLRenderer::check_state_change(GfxState * state)
         }
         // else: different rotation: force new line
 
-        if(merged)
+        if(merged && !equal(state->getHorizScaling(), 0))
         {
-            html_text_page.get_cur_line()->append_offset(dx * old_draw_text_scale,dx * old_draw_text_scale);
-            //std::cout << dx * old_draw_text_scale << ' ' << 3 << ' ';
+            html_text_page.get_cur_line()->append_offset(dx * old_draw_text_scale / state->getHorizScaling(),dx * old_draw_text_scale / state->getHorizScaling());
             if(equal(dy, 0))
             {
                 cur_text_state.vertical_align = 0;
@@ -528,7 +533,13 @@ void HTMLRenderer::prepare_text_line(GfxState * state)
     if(new_line_state >= NLS_NEWLINE)
     {
         // update position such that they will be recorded by text_line_buf
-        state->transform(state->getCurX(), state->getCurY(), &cur_line_state.x, &cur_line_state.y);
+        double rise_x, rise_y;
+        state->textTransformDelta(0, state->getRise(), &rise_x, &rise_y);
+        state->transform(state->getCurX() + rise_x, state->getCurY() + rise_y, &cur_line_state.x, &cur_line_state.y);
+
+        if (param.correct_text_visibility)
+            cur_line_state.first_char_index = get_char_count();
+
         html_text_page.open_new_line(cur_line_state);
 
         cur_text_state.vertical_align = 0;
