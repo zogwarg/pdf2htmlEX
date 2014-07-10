@@ -67,7 +67,7 @@ void HTMLRenderer::drawString(GfxState * state, GooString * s)
 
     while (len > 0) 
     {
-        auto n = font->getNextChar(p, len, &code, &u, &uLen, &dx1, &dy1, &ox, &oy);
+        auto n = font->getNextChar(p, len, &code, &u, &uLen, &ax, &ay, &ox, &oy);
 
         HTMLTextLine * tom_line = html_text_page.get_cur_line();
         double tom_font_size = cur_text_state.font_size;

@@ -21,9 +21,9 @@ using std::cerr;
 void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
 {
     tracer.draw_image(state);
-
-    return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
-
+    if(maskColors)
+        return;
+    
     unsigned char *row;
     unsigned char *rowp;
     Guchar *p;
@@ -104,7 +104,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
                  //<< " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
                  << "\" src=\"" << filename << "\"/>" ;   
 
-    //return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+    return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
 }
 
 #if 0

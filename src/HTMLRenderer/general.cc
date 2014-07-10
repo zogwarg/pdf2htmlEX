@@ -201,10 +201,6 @@ void HTMLRenderer::startPage(int pageNum, GfxState *state, XRef * xref)
 
     html_text_page.set_page_size(state->getPageWidth(), state->getPageHeight());
 
-    reset_state();
-}
-
-void HTMLRenderer::endPage() {
     long long wid = all_manager.width.install(html_text_page.get_width());
     long long hid = all_manager.height.install(html_text_page.get_height());
 
@@ -248,7 +244,11 @@ void HTMLRenderer::endPage() {
                 fallback_bg_renderer->embed_image(pageNum);
         }
     }
+    
+    reset_state();
+}
 
+void HTMLRenderer::endPage() {
     // dump all text
     html_text_page.dump_text(*f_curpage);
     html_text_page.dump_css(f_css.fs);
