@@ -21,6 +21,9 @@
 
 namespace pdf2htmlEX {
 
+  using std::cerr;
+  using std::endl;
+
 // Based on BackgroundRenderer from poppler
 class SplashBackgroundRenderer : public BackgroundRenderer, SplashOutputDev 
 {
@@ -64,10 +67,13 @@ public:
           SplashOutputDev::fill(state);
   }
 
+  virtual void drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg) ;
+
 protected:
   void dump_image(const char * filename, int x1, int y1, int x2, int y2);
   HTMLRenderer * html_renderer;
   const Param & param;
+  int BpageNum;
 };
 
 } // namespace pdf2htmlEX

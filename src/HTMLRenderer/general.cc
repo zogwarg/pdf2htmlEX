@@ -133,6 +133,8 @@ void HTMLRenderer::process(PDFDoc *doc)
             bg_renderer->render_page(doc, i);
         }
 
+        cerr << "display(" << i << "){" << endl;
+
         doc->displayPage(this, i,
                 text_zoom_factor() * DEFAULT_DPI, text_zoom_factor() * DEFAULT_DPI,
                 0,
@@ -140,6 +142,8 @@ void HTMLRenderer::process(PDFDoc *doc)
                 true,  // crop
                 false, // printing
                 nullptr, nullptr, nullptr, nullptr);
+
+        cerr << "}" << endl ;
 
         if(param.split_pages)
         {

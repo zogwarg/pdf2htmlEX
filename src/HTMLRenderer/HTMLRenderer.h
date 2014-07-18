@@ -136,6 +136,8 @@ public:
     bool can_stroke(GfxState *state) { return css_do_path(state, false, true); }
     bool can_fill(GfxState *state) { return css_do_path(state, true, true); }
 
+    int image_count=0;
+
 protected:
     ////////////////////////////////////////////////////
     // misc
@@ -152,6 +154,10 @@ protected:
 
     // convert a LinkAction to a string that our Javascript code can understand
     std::string get_linkaction_str(LinkAction *, std::string & detail);
+
+    void drawPngImage(GfxState *state, Stream *str, int width, int height,
+                    GfxImageColorMap *colorMap, const char* filepath ,GBool isMask = gFalse);
+    void copyStreamToFile(Stream *str, const char * filepath);
 
     ////////////////////////////////////////////////////
     /*
@@ -336,7 +342,7 @@ protected:
     } f_outline, f_pages, f_css , f_fonts ; //TOMMOD ADDED FONT NAMES
     std::ofstream * f_curpage;
     std::string cur_page_filename;
-    int image_count=0;
+    
 
     static const std::string MANIFEST_FILENAME;
 };

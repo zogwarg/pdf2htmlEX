@@ -110,6 +110,9 @@
   -webkit-user-select:none;
   user-select:none;
   visibility:visible;
+  transform-origin:0 100% 0;
+  -ms-transform-origin:0 100% 0;
+  -webkit-transform-origin0 ;0 100% 0;
 }
 .@CSS_FULL_BACKGROUND_IMAGE_CN@ { /* images that occupies the whole page */
   position:absolute;
