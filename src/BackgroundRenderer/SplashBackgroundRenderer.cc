@@ -206,9 +206,4 @@ void SplashBackgroundRenderer::dump_image(const char * filename, int x1, int y1,
 
     fclose(f);
 }
-
-void SplashBackgroundRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg) {
-    embed_image(BpageNum);
-}
-
 } // namespace pdf2htmlEX
