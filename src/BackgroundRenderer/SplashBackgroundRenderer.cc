@@ -19,6 +19,8 @@
 
 #include "SplashBackgroundRenderer.h"
 
+//#include <Magick++.h>
+
 namespace pdf2htmlEX {
 
 using std::string;
@@ -205,5 +207,15 @@ void SplashBackgroundRenderer::dump_image(const char * filename, int x1, int y1,
     }
 
     fclose(f);
+}
+
+void SplashBackgroundRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
+{
+    // Magick::Image toto( Magick::Geometry(640, 480), Magick::Color(Magick::MaxRGB, 0, 0, 0));
+
+    // Stream * k = new MemStream( toto ,0,len,ref);
+    // cerr << "hoho";
+    // SplashOutputDev::drawImage(state,ref, k,width,height,colorMap,interpolate,maskColors,inlineImg);
+    // cerr << "haha";
 }
 } // namespace pdf2htmlEX

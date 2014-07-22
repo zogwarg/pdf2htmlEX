@@ -111,7 +111,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
       sstm.clear();
       sstm << hex << (detNeg && false?"DetNegImage-":"Image-") << HTMLRenderer::pageNum << "-" << dec << image_count + 1 << ".png";
       filename = sstm.str().c_str();
-      (*f_curpage) << " style=\"mask-image:url(" << filename << ");\"" ; 
+      (*f_curpage) << " style=\"mask:url(" << filename << ");\"" ; 
     } else if (maskFlag || softMaskFlag) {
       (*f_curpage) << " style=\"display:none;\"" ;
     }
