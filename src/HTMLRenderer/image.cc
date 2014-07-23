@@ -25,16 +25,57 @@ namespace pdf2htmlEX {
 
 using std::cerr;
 
+void HTMLRenderer::drawMaskedImage(GfxState *state, Object *ref, Stream *str,
+        int width, int height,
+        GfxImageColorMap *colorMap,
+        GBool interpolate,
+        Stream *maskStr,
+        int maskWidth, int maskHeight,
+        GBool maskInvert,
+        GBool maskInterpolate) 
+{
+  cerr << "MI{" << endl ;
+  maskedFlag = gTrue;
+  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
+  maskedFlag = gFalse;
+  maskFlag = gTrue;
+  image_count--;
+  drawImage(state, ref, maskStr, maskWidth, maskHeight, NULL, maskInterpolate, NULL , gFalse);
+  maskFlag = gFalse;
+  cerr << "}" << endl;
+}
+
+void HTMLRenderer::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
+            int width, int height,
+            GfxImageColorMap *colorMap,
+            GBool interpolate,
+            Stream *maskStr,
+            int maskWidth, int maskHeight,
+            GfxImageColorMap *maskColorMap,
+            GBool maskInterpolate) 
+{
+  cerr << "SMI{" << endl ;
+  maskedFlag = gTrue;
+  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
+  maskedFlag = gFalse;
+  softMaskFlag = gTrue;
+  image_count--;
+  drawImage(state, ref, maskStr, maskWidth, maskHeight, maskColorMap, maskInterpolate, NULL, gFalse);
+  softMaskFlag = gFalse;
+  cerr << "}" << endl;
+}
+
 void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
 {
-    if (param.process_nontext) {
+    if (param.process_nontext && param.split_images) {
 
     if( (width <= 10 || height <= 10) ) return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
 
     //CTM DETECTION
     double ctm[6];
     memcpy(ctm, state->getCTM(), sizeof(ctm));
-    GBool detNeg = (ctm[0]*ctm[3]-ctm[1]*ctm[2]>=0?gFalse:gTrue);
+    GBool detNull = (ctm[0]*ctm[3]-ctm[1]*ctm[2]==0?gTrue:gFalse);
+    if (detNull) return;
 
     //IMAGE NAME RESOLVING
     std::stringstream sstm;
@@ -43,7 +84,7 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
 
     image_count++;
     
-    sstm << hex << (detNeg && false?"DetNegImage-":"Image-") << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
+    sstm << hex << (maskFlag||softMaskFlag?"MaskImage-":"Image-") << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
     sstm.str("");
     sstm.clear();
@@ -86,14 +127,26 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
     // 
     // 
 
-    // TRANSLATION PART, put in left and bottom properties
+    double cssWidth,cssHeight;
     double cssLeft = ctm[4] ; 
     double cssBottom = ctm[5] ; 
-    ctm[4] = ctm[5] = 0.0; 
+    ctm[4] = ctm[5] = 0.0;
 
-    // WORK AS PDF FOR NOW
-    double cssWidth = 1;
-    double cssHeight = 1;
+    if (ctm[0] > 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] > 0) {
+      cssWidth = ctm[0];
+      cssHeight = ctm[3];
+      ctm[0] = 1;
+      ctm[3] = 1;
+    } else if (ctm[0] > 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] < 0) {
+      cssWidth = ctm[0];
+      cssHeight = -ctm[3];
+      ctm[0]=1;
+      ctm[3]=-1;
+    } else {
+      cssHeight = 1;
+      cssWidth = 1;
+    }
+    
 
     (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
                  << " " << CSS::LEFT_CN             << all_manager.left.install(cssLeft)
@@ -102,24 +155,10 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
                  << " " << CSS::HEIGHT_CN           << all_manager.height.install(cssHeight)
                  << " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
                  << "\""
-                 << " src=\"" << filename << "\"";
-
-    // UGLY, need to put filename and css in a seperate function from draw image,
-    // Get masked Image file name for now and pray it works;
-    if (maskedFlag) {
-      sstm.str("");
-      sstm.clear();
-      sstm << hex << (detNeg && false?"DetNegImage-":"Image-") << HTMLRenderer::pageNum << "-" << dec << image_count + 1 << ".png";
-      filename = sstm.str().c_str();
-      (*f_curpage) << " style=\"mask:url(" << filename << ");\"" ; 
-    } else if (maskFlag || softMaskFlag) {
-      (*f_curpage) << " style=\"display:none;\"" ;
+                 << " src=\"" << filename << "\""
+                 << "/>" ; 
     }
-
-    (*f_curpage) << "/>" ; 
-
     return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
-    }
 }
 void HTMLRenderer::drawPngImage(GfxState *state, Stream *str, int width, int height,
                                  GfxImageColorMap *colorMap, const char* filepath ,GBool isMask)
@@ -246,58 +285,22 @@ void HTMLRenderer::drawPngImage(GfxState *state, Stream *str, int width, int hei
 #endif
 }
 
-void HTMLRenderer::copyStreamToFile(Stream *str, const char * filepath) {
-    GooString *s = new GooString();
-    str->reset();
-    Stream * base = str->getBaseStream() ;
-    base->reset();
-    base->fillGooString(s);
-    FILE * f ;
-    f = fopen(filepath,"wb");
+// void HTMLRenderer::copyStreamToFile(Stream *str, const char * filepath) {
+//     GooString *s = new GooString();
+//     str->reset();
+//     Stream * base = str->getBaseStream() ;
+//     base->reset();
+//     base->fillGooString(s);
+//     FILE * f ;
+//     f = fopen(filepath,"wb");
 
-    int len = s->getLength();
-    for(int i=0;i<len;i++) {
-      fputc(s->getChar(i),f);
-    }
-    base->close();
-    str->close();
-    fclose(f);
-}
-
-void HTMLRenderer::drawMaskedImage(GfxState *state, Object *ref, Stream *str,
-        int width, int height,
-        GfxImageColorMap *colorMap,
-        GBool interpolate,
-        Stream *maskStr,
-        int maskWidth, int maskHeight,
-        GBool maskInvert,
-        GBool maskInterpolate) {
-  cerr << "MI{" << endl ;
-  maskedFlag = gTrue;
-  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
-  maskedFlag = gFalse;
-  maskFlag = gTrue;
-  drawImage(state, ref, maskStr, maskWidth, maskHeight, NULL, maskInterpolate, NULL , gFalse);
-  maskFlag = gFalse;
-  cerr << "}" << endl;
-}
-
-void HTMLRenderer::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
-            int width, int height,
-            GfxImageColorMap *colorMap,
-            GBool interpolate,
-            Stream *maskStr,
-            int maskWidth, int maskHeight,
-            GfxImageColorMap *maskColorMap,
-            GBool maskInterpolate) {
-  cerr << "SMI{" << endl ;
-  maskedFlag = gTrue;
-  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
-  maskedFlag = gFalse;
-  softMaskFlag = gTrue;
-  drawImage(state, ref, maskStr, maskWidth, maskHeight, maskColorMap, maskInterpolate, NULL, gFalse);
-  softMaskFlag = gFalse;
-  cerr << "}" << endl;
-}
+//     int len = s->getLength();
+//     for(int i=0;i<len;i++) {
+//       fputc(s->getChar(i),f);
+//     }
+//     base->close();
+//     str->close();
+//     fclose(f);
+// }
 
 } // namespace pdf2htmlEX

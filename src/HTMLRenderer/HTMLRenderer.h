@@ -187,7 +187,7 @@ protected:
 
     void drawPngImage(GfxState *state, Stream *str, int width, int height,
                     GfxImageColorMap *colorMap, const char* filepath ,GBool isMask = gFalse);
-    void copyStreamToFile(Stream *str, const char * filepath);
+    //void copyStreamToFile(Stream *str, const char * filepath);
 
     GBool maskFlag=false;
     GBool softMaskFlag=false;
