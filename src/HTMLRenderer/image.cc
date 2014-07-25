@@ -142,9 +142,19 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
       cssHeight = -ctm[3];
       ctm[0]=1;
       ctm[3]=-1;
+    } else if (ctm[0] < 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] > 0) {
+      cssWidth = -ctm[0];
+      cssHeight = ctm[3];
+      ctm[0]=-1;
+      ctm[3]=1;
     } else {
-      cssHeight = 1;
-      cssWidth = 1;
+      double ratio = sqrt(abs(ctm[0]*ctm[3]-ctm[1]*ctm[2]));
+      //ctm [0] /= ratio;
+      //ctm [1] /= ratio;
+      //ctm [2] /= ratio;
+      //ctm [3] /= ratio;
+      cssHeight = 1;//ratio;
+      cssWidth = 1;//ratio;
     }
     
 
