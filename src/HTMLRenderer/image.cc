@@ -34,15 +34,18 @@ void HTMLRenderer::drawMaskedImage(GfxState *state, Object *ref, Stream *str,
         GBool maskInvert,
         GBool maskInterpolate) 
 {
-  cerr << "MI{" << endl ;
+  if (param.process_nontext && param.split_images) { cerr << "MI{" << endl ; }
+
   maskedFlag = gTrue;
   drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
   maskedFlag = gFalse;
+  
   maskFlag = gTrue;
-  image_count--;
+  image_count--; // For name resolving
   drawImage(state, ref, maskStr, maskWidth, maskHeight, NULL, maskInterpolate, NULL , gFalse);
   maskFlag = gFalse;
-  cerr << "}" << endl;
+
+  if (param.process_nontext && param.split_images) {cerr << "}" << endl; }
 }
 
 void HTMLRenderer::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
@@ -54,15 +57,16 @@ void HTMLRenderer::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str
             GfxImageColorMap *maskColorMap,
             GBool maskInterpolate) 
 {
-  cerr << "SMI{" << endl ;
+  if (param.process_nontext && param.split_images) { cerr << "SMI{" << endl ; }
   maskedFlag = gTrue;
   drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
   maskedFlag = gFalse;
+
   softMaskFlag = gTrue;
-  image_count--;
+  image_count--; // For name resolving
   drawImage(state, ref, maskStr, maskWidth, maskHeight, maskColorMap, maskInterpolate, NULL, gFalse);
   softMaskFlag = gFalse;
-  cerr << "}" << endl;
+  if (param.process_nontext && param.split_images) { cerr << "}" << endl; }
 }
 
 void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
@@ -96,8 +100,6 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
           //<< "\tColorSpace: " << colorMap->getColorSpace()->getMode() << endl
           //<< "\tBlendMode: " << state->getBlendMode() << endl
           //<< "\tStreamKind: " << str->getKind() << endl
-
-
 
     // DRAWING or STREAM COPYING
     // copyStreamToFile(str,filepath);
