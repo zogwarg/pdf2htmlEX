@@ -149,12 +149,12 @@ void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int w
       ctm[3]=1;
     } else {
       double ratio = sqrt(abs(ctm[0]*ctm[3]-ctm[1]*ctm[2]));
-      //ctm [0] /= ratio;
-      //ctm [1] /= ratio;
-      //ctm [2] /= ratio;
-      //ctm [3] /= ratio;
-      cssHeight = 1;//ratio;
-      cssWidth = 1;//ratio;
+      ctm [0] /= ratio;
+      ctm [1] /= ratio;
+      ctm [2] /= ratio;
+      ctm [3] /= ratio;
+      cssHeight = ratio;
+      cssWidth = ratio;
     }
     
 
