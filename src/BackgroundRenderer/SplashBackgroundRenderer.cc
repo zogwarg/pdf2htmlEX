@@ -61,7 +61,7 @@ void SplashBackgroundRenderer::drawChar(GfxState *state, double x, double y,
     // - OR using a Type 3 font while param.process_type3 is not enabled
     if((param.fallback)
        || ( (state->getFont()) 
-            && ( (state->getFont()->getWMode())
+            && ( ((state->getFont()->getWMode()) && (!param.try_vertical))
                  || ((state->getFont()->getType() == fontType3) && (!param.process_type3))
                )
           )

@@ -216,6 +216,7 @@ void parse_options (int argc, char **argv)
         // AQUAFADAS
         .add("force-new-line", &param.force_new_line , 1, "Seperate lines in different lines when font info is different TOMMOD")
         .add("split-images", &param.split_images , 0 , "Output Images in different files, and the frames in background, Only works if bg-format is png or jpeg TOMMOD" )
+        .add("try-vertical",&param.try_vertical, 0 , "Try to handle vertical writing mode")
         ;
 
     try

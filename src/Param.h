@@ -79,6 +79,7 @@ struct Param
     // Added for Aquafadas
     int force_new_line; // TOMMOD
     int split_images; // TOMMOD
+    int try_vertical;
 
     std::string input_filename, output_filename;
 };
