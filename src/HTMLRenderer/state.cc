@@ -392,7 +392,12 @@ void HTMLRenderer::check_state_change(GfxState * state)
 
         if(merged)
         {
-            html_text_page.get_cur_line()->append_offset(dx * old_draw_text_scale,dx * old_draw_text_scale);
+            if(state->getFont()->getWMode() && param.try_vertical) {
+                cur_line_state.y += dx * old_draw_text_scale ;
+                cerr << "Draw rescale " << dx * old_draw_text_scale << endl ;
+            } else {
+                html_text_page.get_cur_line()->append_offset(dx * old_draw_text_scale,dx * old_draw_text_scale);
+            }
             //std::cout << dx * old_draw_text_scale << ' ' << 3 << ' ';
             if(equal(dy, 0))
             {
@@ -544,7 +549,12 @@ void HTMLRenderer::prepare_text_line(GfxState * state)
         double target = (cur_tx - draw_tx) * draw_text_scale;
         if(!equal(target, 0))
         {
-            html_text_page.get_cur_line()->append_offset(target,target);
+            if(state->getFont()->getWMode() && param.try_vertical) {
+                cur_line_state.y += target ;
+                cerr << "target " << target << endl; 
+            } else {
+                html_text_page.get_cur_line()->append_offset(target,target);
+            }
             //std::cout << target << ' ' << 4 << ' ';
             draw_tx += target / draw_text_scale;
         }

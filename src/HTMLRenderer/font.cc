@@ -876,8 +876,8 @@ const FontInfo * HTMLRenderer::install_font(GfxFont * font)
 #endif
         return &new_font_info;
     }
-    if(font->getWMode()) {
-        cerr << "Writing mode is unsupported and will be rendered as Image" << endl;
+    if(font->getWMode() && !param.try_vertical) {
+        cerr << "Writing mode is deactivated (only single char support) and will be rendered as Image" << endl;
         export_remote_default_font(new_fn_id);
         return &new_font_info;
     }

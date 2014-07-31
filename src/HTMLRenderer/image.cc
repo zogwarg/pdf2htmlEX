@@ -12,143 +12,307 @@
 #include "util/css_const.h"
 #include <goo/ImgWriter.h>
 #include <goo/PNGWriter.h>
+#include <goo/GooString.h>
 #include <sstream>
+#include <cmath>
+#include <sys/stat.h>
+
+#ifdef ENABLE_LIBPNG
+#include <png.h>
+#endif
 
 namespace pdf2htmlEX {
 
 using std::cerr;
 
+void HTMLRenderer::drawMaskedImage(GfxState *state, Object *ref, Stream *str,
+        int width, int height,
+        GfxImageColorMap *colorMap,
+        GBool interpolate,
+        Stream *maskStr,
+        int maskWidth, int maskHeight,
+        GBool maskInvert,
+        GBool maskInterpolate) 
+{
+  if (param.process_nontext && param.split_images) { cerr << "MI{" << endl ; }
+
+  maskedFlag = gTrue;
+  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
+  maskedFlag = gFalse;
+  
+  maskFlag = gTrue;
+  image_count--; // For name resolving
+  drawImage(state, ref, maskStr, maskWidth, maskHeight, NULL, maskInterpolate, NULL , gFalse);
+  maskFlag = gFalse;
+
+  if (param.process_nontext && param.split_images) {cerr << "}" << endl; }
+}
+
+void HTMLRenderer::drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
+            int width, int height,
+            GfxImageColorMap *colorMap,
+            GBool interpolate,
+            Stream *maskStr,
+            int maskWidth, int maskHeight,
+            GfxImageColorMap *maskColorMap,
+            GBool maskInterpolate) 
+{
+  if (param.process_nontext && param.split_images) { cerr << "SMI{" << endl ; }
+  maskedFlag = gTrue;
+  drawImage(state, ref, str, width, height, colorMap, interpolate, NULL, gFalse);
+  maskedFlag = gFalse;
+
+  softMaskFlag = gTrue;
+  image_count--; // For name resolving
+  drawImage(state, ref, maskStr, maskWidth, maskHeight, maskColorMap, maskInterpolate, NULL, gFalse);
+  softMaskFlag = gFalse;
+  if (param.process_nontext && param.split_images) { cerr << "}" << endl; }
+}
+
 void HTMLRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
 {
-    if (param.process_nontext) {
-    if(maskColors) return;
+    if (param.process_nontext && param.split_images) {
 
-    unsigned char *row;
-    unsigned char *rowp;
-    Guchar *p;
-    GfxRGB rgb;
+    if( (width <= 10 || height <= 10) ) return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
 
+    //CTM DETECTION
+    double ctm[6];
+    memcpy(ctm, state->getCTM(), sizeof(ctm));
+    GBool detNull = (ctm[0]*ctm[3]-ctm[1]*ctm[2]==0?gTrue:gFalse);
+    if (detNull) return;
+
+    //IMAGE NAME RESOLVING
     std::stringstream sstm;
     const char *filename;
     const char *filepath;
-    FILE * f;
-    std::unique_ptr<ImgWriter> writer;
-    ImageStream *imgStr;
 
     image_count++;
-    cerr << "Page '" << hex <<  HTMLRenderer::pageNum << dec << "' going through draw image " << image_count << ":" << endl;
     
-    sstm << hex << "Image-" << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
+    sstm << hex << (maskFlag||softMaskFlag?"MaskImage-":"Image-") << HTMLRenderer::pageNum << "-" << dec << image_count << ".png";
     filename = sstm.str().c_str();
     sstm.str("");
     sstm.clear();
     sstm << param.dest_dir << "/" << filename;
     filepath = sstm.str().c_str();
-    f = fopen(filepath, "wb");
+
+    //DEBUG
+    cerr << "Page '" << hex <<  HTMLRenderer::pageNum << dec << "' going through draw image " << filename << ":" << endl;
+          //<< "\tColorSpace: " << colorMap->getColorSpace()->getMode() << endl
+          //<< "\tBlendMode: " << state->getBlendMode() << endl
+          //<< "\tStreamKind: " << str->getKind() << endl
+
+    // DRAWING or STREAM COPYING
+    // copyStreamToFile(str,filepath);
+    // cerr << "\tCopyStream Done." << endl;
+    drawPngImage(state, str, width, height ,colorMap ,filepath ,maskFlag);
+    cerr << "\tPngWriter Done." << endl;
     
-    writer = std::unique_ptr<ImgWriter>(new PNGWriter);
-    if(!writer->init(f, width, height, param.h_dpi, param.v_dpi))
-        throw "Cannot initialize PNGWriter";
+    //DRAW SUCCESS CHECK
+    struct stat buffer;   
+    if (stat (filepath, &buffer) != 0) return; 
     
-    imgStr = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
-    imgStr->reset();
-
-    row = (unsigned char *) gmallocn(width, sizeof(unsigned int));
-    for (int y = 0; y < height; y++) {
-        p = imgStr->getLine();
-        rowp = row;
-        for (int x = 0; x < width; ++x) {
-        if (p) {
-          colorMap->getRGB(p, &rgb);
-          *rowp++ = colToByte(rgb.r);
-          *rowp++ = colToByte(rgb.g);
-          *rowp++ = colToByte(rgb.b);
-          p += colorMap->getNumPixelComps();
-        } else {
-          *rowp++ = 0;
-          *rowp++ = 0;
-          *rowp++ = 0;
-        }
-      }
-      writer->writeRow(&row);
-    }
-    gfree(row);
-    imgStr->close();
-    delete imgStr;
-    writer->close();
-    fclose(f);
-
-    double ctm[6];
-    memcpy(ctm, state->getCTM(), sizeof(ctm));
-    //ctm[4] = ctm[5] = 0.0;
-
+    //
+    //CSS DUMPING
+    //
     auto & all_manager = HTMLRenderer::all_manager;
     
-    //double h_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.h_dpi;
-    //double v_scale = HTMLRenderer::text_zoom_factor() * DEFAULT_DPI / param.v_dpi;
+    // THE CURRENT TRANSFORMATION MATRIX goes from A 1x1 px square , is scaled to rectangle, transformed and translated.
+    //
+    // CTM =  translationXY + scaleX * scaleY * complexTransformation
+    // 
+    // complexTransformation is often but not always a rotation
+    //
+    // "CTM" = | ctm0 ctm2 ctm4 | =2D= translation(ctm4,ctm5) + | ctm0 ctm2 |  
+    //         | ctm1 ctm3 ctm5 |                               | ctm1 ctm3 |
+    //         |   0    0    1  |
+    //
+    // 
+    // 
 
-    //cerr << "1:" << ctm[0] << ":2:" << ctm[1] << ":3:" << ctm[2] << ":4:" << ctm[3] << ":5:" << ctm[4] << ":6:" << ctm[5] << endl;
+    double cssWidth,cssHeight;
+    double cssLeft = ctm[4] ; 
+    double cssBottom = ctm[5] ; 
+    ctm[4] = ctm[5] = 0.0;
 
-    double left = ctm[4] ;
-    double bottom = ctm[5] ;
-    double cssWidth = ctm[0] ;
-    double cssHeight = ctm[3] ; // TO BE BETTER MANAGED , SOME IMAGES ARE ROTATED
-
+    if (ctm[0] > 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] > 0) {
+      cssWidth = ctm[0];
+      cssHeight = ctm[3];
+      ctm[0] = 1;
+      ctm[3] = 1;
+    } else if (ctm[0] > 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] < 0) {
+      cssWidth = ctm[0];
+      cssHeight = -ctm[3];
+      ctm[0]=1;
+      ctm[3]=-1;
+    } else if (ctm[0] < 0 && ctm[1] == 0 && ctm[2] == 0 && ctm[3] > 0) {
+      cssWidth = -ctm[0];
+      cssHeight = ctm[3];
+      ctm[0]=-1;
+      ctm[3]=1;
+    } else {
+      double ratio = sqrt(abs(ctm[0]*ctm[3]-ctm[1]*ctm[2]));
+      ctm [0] /= ratio;
+      ctm [1] /= ratio;
+      ctm [2] /= ratio;
+      ctm [3] /= ratio;
+      cssHeight = ratio;
+      cssWidth = ratio;
+    }
+    
 
     (*f_curpage) << "<img class=\"" << CSS::IMAGE_CN
-                 << " " << CSS::LEFT_CN             << all_manager.left.install(left)
-                 << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(bottom)
+                 << " " << CSS::LEFT_CN             << all_manager.left.install(cssLeft)
+                 << " " << CSS::BOTTOM_CN           << all_manager.bottom.install(cssBottom)
                  << " " << CSS::WIDTH_CN            << all_manager.width.install(cssWidth)
                  << " " << CSS::HEIGHT_CN           << all_manager.height.install(cssHeight)
-                 //<< " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
-                 << "\" src=\"" << filename << "\"/>" ;   
-
-    //return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+                 << " " << CSS::TRANSFORM_MATRIX_CN << all_manager.transform_matrix.install(ctm)
+                 << "\""
+                 << " src=\"" << filename << "\""
+                 << "/>" ; 
     }
+    return OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
 }
-} // namespace pdf2htmlEX
+void HTMLRenderer::drawPngImage(GfxState *state, Stream *str, int width, int height,
+                                 GfxImageColorMap *colorMap, const char* filepath ,GBool isMask)
+{
+#ifdef ENABLE_LIBPNG
+  FILE *f1;
 
-#if 0
-    if(maskColors)
-        return;
+  if (!colorMap && !isMask) {
+    error(errInternal, -1, "Can't have color image without a color map");
+    return;
+  }
+  if( (width > 10 && height > 10) || false) {
+  // open the image file
+    GooString *fName= new GooString(filepath);
+    //fName->append(".png");
+    if (!(f1 = fopen(fName->getCString(), "wb"))) {
+      error(errIO, -1, "Couldn't open image file '{0:t}'", fName);
+      delete fName;
+      return;
+    }
 
-    rgb8_image_t img(width, height);
-    auto imgview = view(img);
-    auto loc = imgview.xy_at(0,0);
+    cerr << "\tOpened " << filepath << " for writing." << endl;
 
-    ImageStream * img_stream = new ImageStream(str, width, colorMap->getNumPixelComps(), colorMap->getBits());
-    img_stream->reset();
+    PNGWriter *writer = new PNGWriter( isMask ? PNGWriter::MONOCHROME : PNGWriter::RGB );
+    // TODO can we calculate the resolution of the image?
+    if (!writer->init(f1, width, height, 72, 72)) {
+      error(errInternal, -1, "Can't init PNG for image '{0:t}'", fName);
+      delete writer;
+      fclose(f1);
+      return;
+    }
 
-    for(int i = 0; i < height; ++i)
-    {
-        auto p = img_stream->getLine();
-        for(int j = 0; j < width; ++j)
-        {
-            GfxRGB rgb;
-            colorMap->getRGB(p, &rgb);
+    cerr << "\tPNGWriter has an instance." << endl;
 
-            *loc = rgb8_pixel_t(colToByte(rgb.r), colToByte(rgb.g), colToByte(rgb.b));
+    if (!isMask) {
+      cerr << "\tIs not Mask." << endl;
+      Guchar *p;
+      GfxRGB rgb;
+      png_byte *row = (png_byte *) gmalloc(3 * width);   // 3 bytes/pixel: RGB
+      png_bytep *row_pointer= &row;
 
-            p += colorMap->getNumPixelComps();
+      // Initialize the image stream
+      ImageStream *imgStr = new ImageStream(str, width,
+                          colorMap->getNumPixelComps(), colorMap->getBits());
+      imgStr->reset();
 
-            ++ loc.x();
+      // For each line...
+      for (int y = 0; y < height; y++) {
+
+        // Convert into a PNG row
+        p = imgStr->getLine();
+        for (int x = 0; x < width; x++) {
+          colorMap->getRGB(p, &rgb);
+          // Write the RGB pixels into the row
+          row[3*x]= colToByte(rgb.r);
+          row[3*x+1]= colToByte(rgb.g);
+          row[3*x+2]= colToByte(rgb.b);
+          p += colorMap->getNumPixelComps();
         }
 
-        loc = imgview.xy_at(0, i+1);
+        if (!writer->writeRow(row_pointer)) {
+          error(errIO, -1, "Failed to write into PNG '{0:t}'", fName);
+          delete writer;
+          delete imgStr;
+          fclose(f1);
+          return;
+        }
+      }
+      gfree(row);
+      imgStr->close();
+      delete imgStr;
+    }
+    else { // isMask == true
+      cerr << "\tIs Mask." << endl;
+      int size = (width + 7)/8;
+
+      // PDF masks use 0 = draw current color, 1 = leave unchanged.
+      // We invert this to provide the standard interpretation of alpha
+      // (0 = transparent, 1 = opaque). If the colorMap already inverts
+      // the mask we leave the data unchanged.
+      int invert_bits = 0xff;
+      if (colorMap) {
+        GfxGray gray;
+        Guchar zero = 0;
+        colorMap->getGray(&zero, &gray);
+        if (colToByte(gray) == 0)
+          invert_bits = 0x00;
+      }
+
+      str->reset();
+      Guchar *png_row = (Guchar *)gmalloc(size);
+
+      for (int ri = 0; ri < height; ++ri)
+      {
+        for(int i = 0; i < size; i++)
+          png_row[i] = str->getChar() ^ invert_bits;
+
+        if (!writer->writeRow( &png_row ))
+        {
+          error(errIO, -1, "Failed to write into PNG '{0:t}'", fName);
+          delete writer;
+          fclose(f1);
+          gfree(png_row);
+          return;
+        }
+      }
+      str->close();
+      gfree(png_row);
     }
 
-    png_write_view((format("i%|1$x|.png")%image_count).str(), imgview);
+    str->close();
+
+    writer->close();
+    delete writer;
+    fclose(f1);
+
+    cerr << "\tImage Writing Sucess." << endl;
     
-    img_stream->close();
-    delete img_stream;
-
-    close_line();
-
-    double ctm[6];
-    memcpy(ctm, state->getCTM(), sizeof(ctm));
-    ctm[4] = ctm[5] = 0.0;
-    html_fout << format("<img class=\"i t%2%\" style=\"left:%3%px;bottom:%4%px;width:%5%px;height:%6%px;\" src=\"i%|1$x|.png\" />") % image_count % install_transform_matrix(ctm) % state->getCurX() % state->getCurY() % width % height << endl;
-
-
-    ++ image_count;
+  } else {
+    cerr << "\tImage too small and ignored" << endl ; 
+  }
+#else
+  return;
 #endif
+}
+
+// void HTMLRenderer::copyStreamToFile(Stream *str, const char * filepath) {
+//     GooString *s = new GooString();
+//     str->reset();
+//     Stream * base = str->getBaseStream() ;
+//     base->reset();
+//     base->fillGooString(s);
+//     FILE * f ;
+//     f = fopen(filepath,"wb");
+
+//     int len = s->getLength();
+//     for(int i=0;i<len;i++) {
+//       fputc(s->getChar(i),f);
+//     }
+//     base->close();
+//     str->close();
+//     fclose(f);
+// }
+
+} // namespace pdf2htmlEX

@@ -140,6 +140,13 @@ else()
     set(PDF2HTMLEX_LIBS ${PDF2HTMLEX_LIBS} ${PYTHON_LIBRARIES})
 endif()
 
+# find_package(ImageMagick COMPONENTS Magick++)
+# if (ImageMagick_FOUND)
+#  include_directories(${ImageMagick_INCLUDE_DIRS})
+#  link_directories(${ImageMagick_LIBRARY_DIRS})
+#  set(PDF2HTMLEX_LIBS ${PDF2HTMLEX_LIBS} ${ImageMagick_LIBRARIES})
+# endif()
+
 # debug build flags (overwrite default cmake debug flags)
 set(CMAKE_C_FLAGS_DEBUG "-ggdb -pg")
 set(CMAKE_CXX_FLAGS_DEBUG "-ggdb -pg")

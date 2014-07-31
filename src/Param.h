@@ -60,10 +60,10 @@ struct Param
     int space_as_offset;
     int tounicode;
     int optimize_text;
-    int force_new_line; // TOMMOD
 
     // background image
     std::string bg_format;
+    
 
     // encryption
     std::string owner_password, user_password;
@@ -75,6 +75,11 @@ struct Param
     std::string tmp_dir;
     int css_draw;
     int debug;
+
+    // Added for Aquafadas
+    int force_new_line; // TOMMOD
+    int split_images; // TOMMOD
+    int try_vertical;
 
     std::string input_filename, output_filename;
 };

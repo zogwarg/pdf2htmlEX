@@ -110,6 +110,9 @@
   -webkit-user-select:none;
   user-select:none;
   visibility:visible;
+  transform-origin:0 100% 0;
+  -ms-transform-origin:0 100% 0;
+  -webkit-transform-origin:0 100% 0;
 }
 .@CSS_FULL_BACKGROUND_IMAGE_CN@ { /* images that occupies the whole page */
   position:absolute;
@@ -123,7 +126,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
-  visibility:hidden;
+  visibility:visible;
 }
 .@CSS_BACKGROUND_IMAGE_CN@ { /* images that cover only a part of the page */
   position:absolute;
@@ -133,7 +136,7 @@
   -moz-user-select:none;
   -webkit-user-select:none;
   user-select:none;
-  visibility:hidden;
+  visibility:visible;
 }
 @media print {
   .@CSS_PAGE_FRAME_CN@ {

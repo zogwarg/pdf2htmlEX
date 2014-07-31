@@ -187,7 +187,6 @@ void parse_options (int argc, char **argv)
         .add("space-as-offset", &param.space_as_offset, 0, "treat space characters as offsets")
         .add("tounicode", &param.tounicode, 0, "how to handle ToUnicode CMaps (0=auto, 1=force, -1=ignore)")
         .add("optimize-text", &param.optimize_text, 0, "try to reduce the number of HTML elements used for text")
-        .add("force-new-line", &param.force_new_line , 1, "Seperate lines in different lines when font info is different TOMMOD")
 
         // background image
         .add("bg-format", &param.bg_format, "png", "specify background image format")
@@ -213,6 +212,11 @@ void parse_options (int argc, char **argv)
 
         .add("", &param.input_filename, "", "")
         .add("", &param.output_filename, "", "")
+
+        // AQUAFADAS
+        .add("force-new-line", &param.force_new_line , 1, "Seperate lines in different lines when font info is different TOMMOD")
+        .add("split-images", &param.split_images , 0 , "Output Images in different files, and the frames in background, Only works if bg-format is png or jpeg TOMMOD" )
+        .add("try-vertical",&param.try_vertical, 0 , "Try to handle vertical writing mode")
         ;
 
     try

@@ -38,10 +38,12 @@ const SplashColor SplashBackgroundRenderer::white = {255,255,255};
 #if POPPLER_OLDER_THAN_0_23_0
 void SplashBackgroundRenderer::startPage(int pageNum, GfxState *state)
 {
+    BpageNum = pageNum;
     SplashOutputDev::startPage(pageNum, state);
 #else
 void SplashBackgroundRenderer::startPage(int pageNum, GfxState *state, XRef *xrefA)
 {
+    BpageNum = pageNum;
     SplashOutputDev::startPage(pageNum, state, xrefA);
 #endif
     clearModRegion();
@@ -59,7 +61,7 @@ void SplashBackgroundRenderer::drawChar(GfxState *state, double x, double y,
     // - OR using a Type 3 font while param.process_type3 is not enabled
     if((param.fallback)
        || ( (state->getFont()) 
-            && ( (state->getFont()->getWMode())
+            && ( ((state->getFont()->getWMode()) && (!param.try_vertical))
                  || ((state->getFont()->getType() == fontType3) && (!param.process_type3))
                )
           )
@@ -98,7 +100,8 @@ void SplashBackgroundRenderer::embed_image(int pageno)
     if((xmin <= xmax) && (ymin <= ymax))
     {
         {
-            auto fn = html_renderer->str_fmt("%s/bg%x.%s", (param.embed_image ? param.tmp_dir : param.dest_dir).c_str(), pageno, param.bg_format.c_str());
+            html_renderer->image_count++;
+            auto fn = html_renderer->str_fmt("%s/bg%x-%x.%s", (param.embed_image ? param.tmp_dir : param.dest_dir).c_str(), pageno, html_renderer->image_count ,param.bg_format.c_str());
             if(param.embed_image)
                 html_renderer->tmp_files.add((char*)fn);
 
@@ -120,7 +123,7 @@ void SplashBackgroundRenderer::embed_image(int pageno)
 
         if(param.embed_image)
         {
-            auto path = html_renderer->str_fmt("%s/bg%x.%s", param.tmp_dir.c_str(), pageno, param.bg_format.c_str());
+            auto path = html_renderer->str_fmt("%s/bg%x-%x.%s", param.tmp_dir.c_str(), pageno, html_renderer->image_count ,param.bg_format.c_str());
             ifstream fin((char*)path, ifstream::binary);
             if(!fin)
                 throw string("Cannot read background image ") + (char*)path;
@@ -134,7 +137,7 @@ void SplashBackgroundRenderer::embed_image(int pageno)
         }
         else
         {
-            f_page << (char*)html_renderer->str_fmt("bg%x.%s", pageno, param.bg_format.c_str());
+            f_page << (char*)html_renderer->str_fmt("bg%x-%x.%s", pageno, html_renderer->image_count ,param.bg_format.c_str());
         }
         f_page << "\"/>";
     }
@@ -204,4 +207,12 @@ void SplashBackgroundRenderer::dump_image(const char * filename, int x1, int y1,
     fclose(f);
 }
 
+void SplashBackgroundRenderer::drawImage(GfxState * state, Object * ref, Stream * str, int width, int height, GfxImageColorMap * colorMap, GBool interpolate, int *maskColors, GBool inlineImg)
+{
+    if (!param.split_images) {
+        SplashOutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+    } else {
+        OutputDev::drawImage(state,ref,str,width,height,colorMap,interpolate,maskColors,inlineImg);
+    }
+}
 } // namespace pdf2htmlEX

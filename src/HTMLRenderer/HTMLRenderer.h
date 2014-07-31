@@ -37,6 +37,9 @@
 
 namespace pdf2htmlEX {
 
+using std::cerr;
+using std::endl;
+
 class HTMLRenderer : public OutputDev
 {
 public:
@@ -73,6 +76,15 @@ public:
     virtual GBool needClipToCropBox() { return gTrue; }
 
     virtual void setDefaultCTM(double *ctm);
+
+    // TOMMOD INTERFACE
+            // Does this device use FillColorStop()?
+            virtual GBool useFillColorStop() { return gTrue; }
+
+            // Does this device use tilingPatternFill()?  If this returns false,
+            // tiling pattern fills will be reduced to a series of other drawing
+            // operations.
+            virtual GBool useTilingPatternFill() { return gTrue; }
 
     // Start a page.
 #if POPPLER_OLDER_THAN_0_23_0
@@ -132,9 +144,29 @@ public:
 
     virtual void processLink(AnnotLink * al);
 
+    virtual void drawMaskedImage(GfxState *state, Object *ref, Stream *str,
+                int width, int height,
+                GfxImageColorMap *colorMap,
+                GBool interpolate,
+                Stream *maskStr,
+                int maskWidth, int maskHeight,
+                GBool maskInvert,
+                GBool maskInterpolate) ;
+
+    virtual void drawSoftMaskedImage(GfxState *state, Object *ref, Stream *str,
+                int width, int height,
+                GfxImageColorMap *colorMap,
+                GBool interpolate,
+                Stream *maskStr,
+                int maskWidth, int maskHeight,
+                GfxImageColorMap *maskColorMap,
+                GBool maskInterpolate) ;
+
     /* capacity test */
     bool can_stroke(GfxState *state) { return css_do_path(state, false, true); }
     bool can_fill(GfxState *state) { return css_do_path(state, true, true); }
+
+    int image_count=0;
 
 protected:
     ////////////////////////////////////////////////////
@@ -152,6 +184,14 @@ protected:
 
     // convert a LinkAction to a string that our Javascript code can understand
     std::string get_linkaction_str(LinkAction *, std::string & detail);
+
+    void drawPngImage(GfxState *state, Stream *str, int width, int height,
+                    GfxImageColorMap *colorMap, const char* filepath ,GBool isMask = gFalse);
+    //void copyStreamToFile(Stream *str, const char * filepath);
+
+    GBool maskFlag=false;
+    GBool softMaskFlag=false;
+    GBool maskedFlag=false;
 
     ////////////////////////////////////////////////////
     /*
@@ -336,7 +376,7 @@ protected:
     } f_outline, f_pages, f_css , f_fonts ; //TOMMOD ADDED FONT NAMES
     std::ofstream * f_curpage;
     std::string cur_page_filename;
-    int image_count=0;
+    
 
     static const std::string MANIFEST_FILENAME;
 };
