@@ -120,7 +120,7 @@ Unicode unicode_from_font (CharCode code, GfxFont * font)
         if(cname)
         {
 #if POPPLER_OLDER_THAN_0_25_0
-            Unicode ou = globalParams->mapNameToUnicodeText(cname);
+            Unicode ou = globalParams->mapNameToUnicode(cname);
 #else
             Unicode ou = globalParams->mapNameToUnicodeText(cname); // TOMMOD mapNameToUnicodeText > mapNameToUnicode
 #endif
