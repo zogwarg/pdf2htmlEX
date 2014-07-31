@@ -185,6 +185,9 @@ void HTMLRenderer::startPage(int pageNum, GfxState *state, XRef * xref)
     //if (param.force_new_line) std::cout << 'yes' ;
     this->pageNum = pageNum;
     this->image_count = 0;
+    this->maskFlag = false;
+    this->softMaskFlag = false;
+    this->maskedFlag = false;
 
     double pageWidth = state->getPageWidth();
     double pageHeight = state->getPageHeight();

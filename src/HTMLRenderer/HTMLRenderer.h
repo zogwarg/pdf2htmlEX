@@ -166,7 +166,7 @@ public:
     bool can_stroke(GfxState *state) { return css_do_path(state, false, true); }
     bool can_fill(GfxState *state) { return css_do_path(state, true, true); }
 
-    int image_count=0;
+    int image_count;
 
 protected:
     ////////////////////////////////////////////////////
@@ -189,9 +189,9 @@ protected:
                     GfxImageColorMap *colorMap, const char* filepath ,GBool isMask = gFalse);
     //void copyStreamToFile(Stream *str, const char * filepath);
 
-    GBool maskFlag=false;
-    GBool softMaskFlag=false;
-    GBool maskedFlag=false;
+    GBool maskFlag;
+    GBool softMaskFlag;
+    GBool maskedFlag;
 
     ////////////////////////////////////////////////////
     /*
